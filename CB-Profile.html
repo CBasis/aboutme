@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Meet Christian Braukmüller</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700;800&display=swap">
+<style>
+/* Evonik brand: purple #991d85, warm greys, black type (same tokens as SPM-LA.html) */
+:root {
+  --bg: #ffffff; --surface: #f4f2ef; --surface-2: #e9e6df; --fg: #000000; --muted: #5e5a52; --line: #dad5c9;
+  --purple: #991d85; --purple-dark: #5c1150; --purple-deep: #3e0c36; --purple-light: #d6a5ce; --purple-pale: #f2dcee;
+  --on-dark: #ffffff;
+  --font: "Evonik Prokyon", "Source Sans 3", Arial, Helvetica, sans-serif;
+  --ease: cubic-bezier(.2, .75, .2, 1);
+}
+* { box-sizing: border-box }
+html, body { height: 100%; margin: 0 }
+body { background: #1c1519; font-family: var(--font); color: var(--fg); overflow: hidden }
+a { color: inherit }
+
+/* 16:9 stage, designed at 1600x900 and scaled to the window */
+.stage {
+  position: absolute; left: 50%; top: 50%; width: 1600px; height: 900px;
+  transform: translate(-50%, -50%) scale(var(--s, 1)); transform-origin: center;
+  background: var(--bg); overflow: hidden; display: flex; flex-direction: column;
+  box-shadow: 0 30px 80px rgba(0,0,0,.45);
+}
+
+/* top bar + tabs */
+.top { flex: none; height: 96px; display: flex; align-items: center; gap: 40px; padding: 0 56px; border-bottom: 1px solid var(--line); position: relative; z-index: 2; background: var(--bg) }
+.brand { display: flex; align-items: center; gap: 14px; white-space: nowrap }
+.brand .mk { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; border: 2px solid var(--purple) }
+.brand .mk img { width: 100%; height: 100%; object-fit: cover; object-position: 47% 22%; transform: scale(1.9); transform-origin: 47% 28% }
+.brand b { display: block; font-size: 18px; line-height: 1.1 }
+.brand span { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--purple); font-weight: 600 }
+.tabs { position: relative; display: flex; gap: 4px; margin-left: auto; height: 100% }
+.tab { font: inherit; font-size: 17px; font-weight: 600; color: var(--muted); background: none; border: 0; padding: 0 16px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: color .25s }
+.tab .no { font-size: 12px; font-variant-numeric: tabular-nums; color: var(--purple-light); transition: color .25s }
+.tab:hover { color: var(--fg) }
+.tab[aria-selected="true"] { color: var(--purple) }
+.tab[aria-selected="true"] .no { color: var(--purple) }
+.tab:focus-visible { outline: 2px solid var(--purple); outline-offset: -6px; border-radius: 6px }
+.ink.instant { transition: none }
+.ink { position: absolute; bottom: -1px; height: 4px; background: var(--purple); border-radius: 4px 4px 0 0; transition: left .45s var(--ease), width .45s var(--ease) }
+
+/* panels */
+.deck { flex: 1; position: relative; overflow: hidden }
+.panel { position: absolute; inset: 0; padding: 52px 56px 40px; visibility: hidden; display: flex; flex-direction: column }
+.panel.active, .panel.leaving { visibility: visible }
+.panel.active.fwd { animation: inR .6s var(--ease) both }
+.panel.active.back { animation: inL .6s var(--ease) both }
+.panel.leaving.fwd { animation: outL .45s var(--ease) both }
+.panel.leaving.back { animation: outR .45s var(--ease) both }
+@keyframes inR { from { opacity: 0; transform: translateX(90px) } }
+@keyframes inL { from { opacity: 0; transform: translateX(-90px) } }
+@keyframes outL { to { opacity: 0; transform: translateX(-90px) } }
+@keyframes outR { to { opacity: 0; transform: translateX(90px) } }
+.panel.active .rv { animation: up .7s var(--ease) both; animation-delay: calc(var(--i, 0) * 70ms + 150ms) }
+@keyframes up { from { opacity: 0; transform: translateY(26px) } }
+@media (prefers-reduced-motion: reduce) {
+  .panel.active, .panel.leaving, .panel.active .rv { animation: none !important }
+  .ink { transition: none }
+}
+
+/* footer */
+.foot { flex: none; height: 56px; display: flex; align-items: center; gap: 20px; padding: 0 56px; border-top: 1px solid var(--line); font-size: 15px; color: var(--muted) }
+.prog { flex: 1; height: 4px; background: var(--surface-2); border-radius: 4px; overflow: hidden }
+.prog i { display: block; height: 100%; background: var(--purple); width: 0; transition: width .5s var(--ease) }
+.nav { font: inherit; width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--line); background: var(--bg); color: var(--fg); cursor: pointer; display: grid; place-items: center; transition: border-color .2s, background .2s, color .2s }
+.nav:hover:not(:disabled) { border-color: var(--purple); color: var(--purple) }
+.nav:disabled { opacity: .35; cursor: default }
+.nav svg { width: 16px; height: 16px }
+.pg { font-variant-numeric: tabular-nums; min-width: 56px; text-align: center }
+
+/* shared typography */
+.eyebrow { font-size: 16px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--purple); margin: 0 0 10px }
+h1, h2, h3 { margin: 0; line-height: 1.08; text-wrap: balance }
+h2 { font-size: 54px; font-weight: 800; margin-bottom: 34px }
+h3 { font-size: 26px; font-weight: 700 }
+p { margin: 0 }
+.muted { color: var(--muted) }
+.grid { display: grid; gap: 22px; min-height: 0 }
+.card { background: var(--surface); padding: 26px 28px; border-top: 4px solid var(--purple); min-width: 0 }
+.card h3 { margin-bottom: 10px }
+.card p, .card li { font-size: 20px; line-height: 1.45 }
+.card ul { margin: 0; padding-left: 22px }
+.card li + li { margin-top: 6px }
+.ico { width: 56px; height: 56px; border-radius: 50%; background: var(--purple); color: #fff; display: grid; place-items: center; margin-bottom: 16px; flex: none }
+.ico svg { width: 28px; height: 28px }
+.ico.lt { background: var(--purple-pale); color: var(--purple) }
+.pill { display: inline-flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 600; padding: 7px 16px; border-radius: 999px; background: var(--purple-pale); color: var(--purple-dark); white-space: nowrap }
+.pills { display: flex; flex-wrap: wrap; gap: 10px }
+
+/* 1 · intro */
+#p1 { padding: 0; flex-direction: row }
+.hero-l { width: 620px; flex: none; background: var(--purple); position: relative; overflow: hidden; display: grid; place-items: center }
+.hero-l::before, .hero-l::after { content: ""; position: absolute; border-radius: 50%; border: 2px solid rgba(255,255,255,.18) }
+.hero-l::before { width: 640px; height: 640px }
+.hero-l::after { width: 820px; height: 820px; border-color: rgba(255,255,255,.09) }
+.photo { width: 470px; height: 470px; border-radius: 50%; overflow: hidden; border: 10px solid #fff; box-shadow: 0 24px 60px rgba(40,0,30,.45); position: relative; z-index: 1 }
+.photo img { width: 100%; height: 100%; object-fit: cover; object-position: 47% 30%; transform: scale(1.35); transform-origin: 47% 34% }
+.panel.active .photo { animation: pop .9s var(--ease) both .1s }
+@keyframes pop { from { opacity: 0; transform: scale(.85) rotate(-4deg) } }
+.badge { position: absolute; z-index: 2; background: #fff; color: var(--purple-dark); font-weight: 700; font-size: 17px; padding: 10px 18px; border-radius: 999px; box-shadow: 0 10px 30px rgba(40,0,30,.3); display: flex; align-items: center; gap: 8px }
+.badge i { width: 10px; height: 10px; border-radius: 50%; background: var(--purple); display: block }
+.b1 { top: 110px; right: 38px } .b2 { bottom: 120px; left: 34px } .b3 { bottom: 60px; right: 70px }
+.panel.active .badge { animation: up .7s var(--ease) both } .panel.active .b1 { animation-delay: .55s } .panel.active .b2 { animation-delay: .7s } .panel.active .b3 { animation-delay: .85s }
+.hero-r { flex: 1; padding: 64px 64px 40px 72px; display: flex; flex-direction: column; min-width: 0 }
+.hero-r h1 { font-size: 80px; font-weight: 800; letter-spacing: -.01em; margin-bottom: 14px }
+.hero-r .role { font-size: 28px; font-weight: 600; color: var(--purple); margin-bottom: 22px }
+.hero-r .sum { font-size: 22px; line-height: 1.5; color: var(--muted); max-width: 46ch; margin-bottom: 26px }
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-top: auto }
+.stat { border-left: 4px solid var(--purple); background: var(--surface); padding: 16px 18px }
+.stat b { display: block; font-size: 48px; font-weight: 800; line-height: 1; color: var(--purple); font-variant-numeric: tabular-nums }
+.stat span { display: block; margin-top: 8px; font-size: 16px; color: var(--muted); line-height: 1.3 }
+
+/* 2 · private */
+.priv { grid-template-columns: repeat(4, minmax(0, 1fr)); flex: 1 }
+.priv .card { display: flex; flex-direction: column }
+.priv .big { font-size: 64px; font-weight: 800; color: var(--purple); line-height: 1; margin: 4px 0 10px }
+.loc { margin-top: 26px; display: flex; align-items: center; gap: 22px; background: var(--purple); color: #fff; padding: 22px 28px }
+.loc .ico { background: #fff; color: var(--purple); margin: 0 }
+.loc b { font-size: 26px } .loc span { font-size: 20px; color: var(--purple-pale) }
+
+/* 3 · career */
+.tl { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px; margin-bottom: 34px }
+.tl::before { content: ""; position: absolute; left: 0; right: 0; top: 15px; height: 3px; background: var(--purple-light) }
+.panel.active .tl::after { content: ""; position: absolute; left: 0; top: 15px; height: 3px; background: var(--purple); animation: grow 1.4s var(--ease) both .3s; width: 100% }
+@keyframes grow { from { width: 0 } }
+.st { position: relative; padding-top: 48px }
+.st::before { content: ""; position: absolute; top: 4px; left: 0; width: 26px; height: 26px; border-radius: 50%; background: #fff; border: 5px solid var(--purple); z-index: 1 }
+.st.now::before { background: var(--purple); box-shadow: 0 0 0 8px var(--purple-pale) }
+.st .yr { font-size: 18px; font-weight: 700; color: var(--purple); letter-spacing: .06em; text-transform: uppercase }
+.st h3 { margin: 6px 0 6px; font-size: 27px }
+.st p { font-size: 19px; color: var(--muted); line-height: 1.4 }
+.focus { flex: 1; display: grid; grid-template-columns: 300px repeat(4, minmax(0, 1fr)); gap: 18px; align-items: stretch }
+.focus .lbl { background: var(--purple); color: #fff; padding: 26px 28px; display: flex; flex-direction: column; justify-content: center }
+.focus .lbl b { font-size: 30px; line-height: 1.1 } .focus .lbl span { color: var(--purple-pale); font-size: 18px; margin-top: 8px }
+.focus .card { padding: 22px 22px; display: flex; flex-direction: column }
+.focus .card p { font-size: 19px }
+.focus .card .n { margin-top: auto; font-size: 64px; font-weight: 800; line-height: 1; color: var(--purple-pale) }
+.focus .card em { display: block; margin-top: 8px; font-size: 16px; color: var(--purple); font-style: normal; font-weight: 600 }
+
+/* 4 · community */
+.com { grid-template-columns: 1.15fr 1fr; flex: 1 }
+.mentor { background: var(--purple); color: #fff; padding: 36px 40px; display: flex; flex-direction: column; border: 0 }
+.mentor .since { display: flex; align-items: baseline; gap: 16px; margin-bottom: 18px }
+.mentor .since b { font-size: 96px; font-weight: 800; line-height: .9 }
+.mentor .since span { font-size: 22px; color: var(--purple-pale) }
+.mentor h3 { font-size: 34px; margin-bottom: 14px }
+.mentor p { font-size: 20px; line-height: 1.5; color: #fbeef8 }
+.mentor .q { margin-top: auto; padding-top: 22px; border-top: 1px solid rgba(255,255,255,.25); font-size: 19px; color: var(--purple-pale) }
+.stack { display: flex; flex-direction: column; gap: 22px; min-width: 0 }
+.stack .card { flex: 1 }
+.row { display: flex; gap: 20px; align-items: flex-start }
+.row .ico { margin: 0 }
+.hl { color: var(--purple); font-weight: 700 }
+
+/* 5 · DSAG */
+.dsag { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 22px }
+.role-c { display: flex; gap: 22px; align-items: center; background: var(--surface); padding: 24px 28px; border-left: 6px solid var(--purple) }
+.role-c .yrs { flex: none; width: 104px; height: 104px; border-radius: 50%; background: var(--purple); color: #fff; display: grid; place-content: center; text-align: center }
+.role-c .yrs b { font-size: 38px; font-weight: 800; line-height: 1 } .role-c .yrs span { font-size: 14px; text-transform: uppercase; letter-spacing: .08em }
+.role-c small { font-size: 16px; font-weight: 700; color: var(--purple); text-transform: uppercase; letter-spacing: .1em }
+.role-c h3 { font-size: 30px; margin: 4px 0 4px }
+.role-c p { font-size: 18px; color: var(--muted) }
+.dsag2 { grid-template-columns: repeat(2, minmax(0, 1fr)); flex: 1 }
+.dsag2 .card { display: flex; flex-direction: column }
+.dsag2 .card p { font-size: 21px }
+.flow { display: flex; align-items: center; gap: 10px; margin-top: auto }
+.flow span { flex: 1; text-align: center; background: #fff; border: 1.5px solid var(--purple-light); padding: 16px 8px; font-size: 18px; font-weight: 600 }
+.flow svg { width: 22px; height: 22px; color: var(--purple); flex: none }
+.flow span.end { background: var(--purple); color: #fff; border-color: var(--purple) }
+blockquote { margin: auto 0 0; padding-left: 22px; border-left: 4px solid var(--purple); font-size: 30px; font-weight: 700; color: var(--purple); line-height: 1.2 }
+blockquote small { display: block; font-size: 18px; color: var(--muted); font-weight: 400; margin-top: 6px }
+
+/* 6 · media */
+.media { grid-template-columns: repeat(3, minmax(0, 1fr)); flex: 1; grid-template-rows: auto 1fr }
+.col h3 { display: flex; align-items: center; gap: 12px; font-size: 24px; margin-bottom: 16px }
+.col h3 .ico { width: 44px; height: 44px; margin: 0 } .col h3 .ico svg { width: 22px; height: 22px }
+.links { display: flex; flex-direction: column; gap: 12px }
+.lk { display: block; text-decoration: none; background: var(--surface); padding: 14px 18px; border-left: 4px solid transparent; transition: border-color .2s, background .2s, transform .25s var(--ease) }
+.lk:hover { border-left-color: var(--purple); background: var(--purple-pale); transform: translateX(6px) }
+.lk:focus-visible { outline: 2px solid var(--purple); outline-offset: 2px }
+.lk small { display: block; font-size: 14px; font-weight: 700; color: var(--purple); text-transform: uppercase; letter-spacing: .08em }
+.lk b { display: block; font-size: 19px; line-height: 1.3; margin-top: 3px }
+.lk span { display: block; font-size: 15px; color: var(--muted); margin-top: 3px }
+
+/* 7 · passions */
+.pas { grid-template-columns: repeat(2, minmax(0, 1fr)); flex: 1 }
+.pas .card { padding: 34px 38px; display: flex; flex-direction: column; position: relative; overflow: hidden }
+.pas .ico { width: 76px; height: 76px } .pas .ico svg { width: 38px; height: 38px }
+.pas h3 { font-size: 36px; margin-bottom: 14px }
+.pas p { font-size: 21px }
+.pas .card .pills { margin-top: auto; padding-top: 20px }
+.pas .card > * { position: relative; z-index: 1 }
+.pas .card::after { content: ""; position: absolute; right: -90px; bottom: -90px; width: 260px; height: 260px; border-radius: 50%; border: 36px solid var(--purple-pale); opacity: .6 }
+.bye { margin-top: 22px; display: flex; align-items: center; gap: 28px; background: var(--purple); color: #fff; padding: 22px 30px }
+.bye .face { width: 76px; height: 76px; border-radius: 50%; overflow: hidden; border: 3px solid #fff; flex: none }
+.bye .face img { width: 100%; height: 100%; object-fit: cover; object-position: 47% 22%; transform: scale(1.9); transform-origin: 47% 28% }
+.bye b { font-size: 30px; display: block } .bye span { font-size: 19px; color: var(--purple-pale) }
+.bye .pills { margin-left: auto }
+.bye .pill { background: rgba(255,255,255,.14); color: #fff; text-decoration: none }
+.bye .pill:hover { background: #fff; color: var(--purple) }
+/* in-place photo viewer: camera button opens photos inside its section, each click shows the next, after the last it closes */
+[data-photos] { position: relative }
+.ph-btn { position: absolute; top: 14px; right: 14px; z-index: 5; height: 44px; min-width: 44px; padding: 0 12px; border-radius: 999px; border: 0; background: #fff; color: var(--purple); box-shadow: 0 6px 18px rgba(40,0,30,.25); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font: inherit; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; transition: transform .25s var(--ease), background .2s, color .2s }
+.ph-btn:hover { transform: scale(1.08); background: var(--purple); color: #fff }
+.ph-btn:focus-visible { outline: 3px solid var(--purple-light); outline-offset: 2px }
+.ph-btn svg { width: 22px; height: 22px; flex: none }
+.ph-btn .cnt:empty { display: none }
+.focus > .ph-btn { top: auto; right: auto; left: 22px; bottom: 22px }
+.ph { position: absolute; inset: 0; z-index: 4; overflow: hidden; background: #1c1519; cursor: pointer;
+  clip-path: circle(0 at var(--cx, 100%) var(--cy, 0)); transition: clip-path .7s var(--ease); pointer-events: none }
+.ph.open { clip-path: circle(150% at var(--cx, 100%) var(--cy, 0)); pointer-events: auto }
+.ph img { position: absolute; inset: 0; width: 100%; height: 100%; display: block }
+.ph .bg { object-fit: cover; filter: blur(28px) brightness(.55); transform: scale(1.15) }
+.ph .fg { object-fit: contain; transition: opacity .35s var(--ease), transform .5s var(--ease) }
+.ph.swap .fg { opacity: 0; transform: scale(.96) }
+.ph .dots { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; gap: 8px; z-index: 1 }
+.ph .dots i { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,.45); transition: background .3s, transform .3s }
+.ph .dots i.on { background: #fff; transform: scale(1.3) }
+@media (prefers-reduced-motion: reduce) { .ph, .ph .fg { transition: none } }
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <header class="top">
+    <div class="brand">
+      <div class="mk"><img src="CB.jpeg" alt=""></div>
+      <div><span>Introduction</span><b>Christian Braukmüller</b></div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Chapters" id="tabs">
+      <button class="tab" role="tab" aria-controls="p1"><span class="no">01</span>Hello</button>
+      <button class="tab" role="tab" aria-controls="p2"><span class="no">02</span>Private</button>
+      <button class="tab" role="tab" aria-controls="p3"><span class="no">03</span>Career</button>
+      <button class="tab" role="tab" aria-controls="p4"><span class="no">04</span>SAP Community</button>
+      <button class="tab" role="tab" aria-controls="p5"><span class="no">05</span>DSAG</button>
+      <button class="tab" role="tab" aria-controls="p6"><span class="no">06</span>Media</button>
+      <button class="tab" role="tab" aria-controls="p7"><span class="no">07</span>Passions</button>
+      <span class="ink" id="ink"></span>
+    </nav>
+  </header>
+
+  <main class="deck">
+    <!-- 1 · Hello -->
+    <section class="panel" id="p1" role="tabpanel">
+      <div class="hero-l">
+        <div class="photo"><img src="CB.jpeg" alt="Portrait of Christian Braukmüller"></div>
+        <div class="badge b1"><i></i>Evonik since 2021 (internally)</div>
+        <div class="badge b2"><i></i>SAP Community passion</div>
+        <div class="badge b3"><i></i>Evonik / degussa since 2001 <br>(External)</div>
+      </div>
+      <div class="hero-r">
+        <p class="eyebrow rv">Nice to meet you</p>
+        <h1 class="rv">Christian Braukmüller</h1>
+        <p class="role rv">Team Lead – SAP Landscape Architecture · Evonik Industries AG</p>
+        <p class="sum rv">Experienced SAP Landscape Architect, DSAG Spokesman and long-standing SAP Mentor – specialized in Enterprise Architecture, SAP BTP Operations &amp; Development, Visual Thinking and Agentic Engineering.</p>
+        <div class="pills rv">
+          <span class="pill">Enterprise Architecture</span><span class="pill">SAP BTP</span><span class="pill">Visual Thinking</span><span class="pill">Agentic Engineering</span>
+        </div>
+        <div class="stats">
+          <div class="stat rv"><b>30</b><span>years in the SAP ecosystem (since R/3, 1996)</span></div>
+          <div class="stat rv"><b>12</b><span>years as SAP Mentor</span></div>
+          <div class="stat rv"><b>100+</b><span>community events organized</span></div>
+          <div class="stat rv"><b>2</b><span>DSAG working groups led as Spokesman</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 · Private -->
+    <section class="panel" id="p2" role="tabpanel">
+      <p class="eyebrow rv">02 · Private</p>
+      <h2 class="rv">The person behind the profession</h2>
+      <div class="grid priv">
+        <div class="card rv">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 12 5.5 5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7z"/></svg></div>
+          <h3>Family</h3>
+          <div class="big">30</div>
+          <p>years married</p>
+        </div>
+        <div class="card rv">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3.5"/><circle cx="17" cy="9" r="2.5"/><path d="M2 21v-1a6 6 0 0 1 12 0v1M14.5 21v-1a4.5 4.5 0 0 1 7.5-3.3"/></svg></div>
+          <h3>Kids</h3>
+          <div class="big">2</div>
+          <p>grown-up children (28 &amp; 25) – both working in IT</p>
+        </div>
+        <div class="card rv" data-photos="CB_Private_Rasen_01.jpeg, CB_Private_Rasen_02.jpeg">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/></svg></div>
+          <h3>Hobbies</h3>
+          <ul><li>House &amp; garden</li><li>IT</li><li>Creativity</li></ul>
+        </div>
+        <div class="card rv" data-photos="CB_Privat_01.jpeg, CB_Privat_02.jpeg, CB_Privat_03.jpeg">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17" r="3.5"/><circle cx="18.5" cy="17" r="3.5"/><path d="M5.5 17 9 9h6l3.5 8M9 9 12 17h-6.5M15 9l-1.5-3H11"/></svg></div>
+          <h3>Sports</h3>
+          <ul><li>Badminton</li><li>Cycling tours<br><span class="muted">(no e-bike 😉)</span></li></ul>
+        </div>
+      </div>
+      <div class="loc rv">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></div>
+        <div><b>Schlüchtern, Hessen, Germany</b><br><span>about 60 km east of Hanau</span></div>
+      </div>
+    </section>
+
+    <!-- 3 · Career -->
+    <section class="panel" id="p3" role="tabpanel">
+      <p class="eyebrow rv">03 · Career</p>
+      <h2 class="rv">30 years of SAP – from R/3 to BTP</h2>
+      <div class="tl">
+        <div class="st rv"><div class="yr">1996</div><h3>SAP journey starts</h3><p>Kickstart in the SAP ecosystem with the new SAP R/3. Building a first public cloud for SAP HR customers</p></div>
+        <div class="st rv"><div class="yr">~5 years</div><h3>Startup Consulting</h3><p>Starting member of a SAP consulting company VISICON.</p></div>
+        <div class="st rv"><div class="yr">~17 years</div><h3>Independent Consultant</h3><p>Infrastructure, landscapes, security, automation, profile parameters &amp; LaMa.</p></div>
+        <div class="st now rv"><div class="yr">Since 2021</div><h3>Evonik Industries AG</h3><p>Team Lead – SAP Landscape Architecture.</p></div>
+      </div>
+      <div class="focus" data-photos="CB_Evonik.jpeg">
+        <div class="lbl rv"><b>Current focus areas</b><span>at Evonik</span></div>
+        <div class="card rv"><p>Enterprise SAP Architecture <br><br> Transforming the Landscape & Handling the complexity</p><span class="n">01</span></div>
+        <div class="card rv"><p>SAP BTP strategy <br><br> Integration, Governance & Automation</p><span class="n">02</span></div>
+        <div class="card rv"><p>SAP Business AI <br><br> Finding the right way into the SAP Landscapes</p><span class="n">03</span></div>
+        <div class="card rv"><p>SAP Customer CoE - Organizing and explaining "Excellence" <br><br> Connecting the dots<br>Influence SAP</p><em></em><span class="n">04</span></div>
+      </div>
+    </section>
+
+    <!-- 4 · SAP Community -->
+    <section class="panel" id="p4" role="tabpanel">
+      <p class="eyebrow rv">04 · SAP Community</p>
+      <h2 class="rv">Connecting people, bridging to SAP</h2>
+      <div class="grid com">
+        <div class="card mentor rv" data-photos="CB_SAPMentors_01.png, CB_SAPMentors_02.jpeg">
+          <div class="since"><b>2014</b><span>SAP Mentor since May 2014<br>~12 years · @CBasis</span></div>
+          <h3>What is an SAP Mentor?</h3>
+          <p>Quote: "A selected group of top influencers, community leaders, independent experts and practitioners recognized directly by SAP. <br><br>Founded in 2007, they act as a vital feedback loop between the SAP ecosystem – customers, partners, developers – and SAP Executives and product &amp; engineering teams."</p>
+          <p class="q">Candid product feedback · driving innovation · reflecting strategy</p>
+        </div>
+        <div class="stack">
+          <div class="card rv">
+            <div class="row">
+              <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M2 20a6 6 0 0 1 12 0M10 20a6 6 0 0 1 12 0"/></svg></div>
+              <div><h3>SAP Stammtisch Frankfurt</h3><p>Co-initiator &amp; co-organizer – <span class="hl">100+ community events</span> in Frankfurt region.</p></div>
+            </div>
+          </div>
+          <div class="card rv" data-photos="SAP_Community_01.png">
+            <div class="row">
+              <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></div>
+              <div><h3>Conferences</h3><p>Catalyst, organizer and speaker at community-driven formats:</p>
+                <div class="pills" style="margin-top:12px"><span class="pill">SAPInsideTrack</span><span class="pill">UI5con</span><span class="pill">reCAP</span></div></div>
+            </div>
+          </div>
+          <div class="card rv">
+            <div class="row">
+              <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg></div>
+              <div><h3>Mentoring</h3><p>Guiding new community members into the SAP Ecosystem</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5 · DSAG -->
+    <section class="panel" id="p5" role="tabpanel">
+      <p class="eyebrow rv">05 · DSAG – German-speaking SAP User Group</p>
+      <h2 class="rv">Giving customers a voice</h2>
+      <div class="grid dsag">
+        <div class="role-c rv"><div class="yrs"><b>3</b><span>years</span></div><div><small>Spokesman</small><h3>SAP &amp; Cloud Infrastructure and Automation</h3></div></div>
+        <div class="role-c rv"><div class="yrs"><b>2+</b><span>years<br>ongoing</span></div><div><small>Spokesman</small><h3>SAP BTP Operations &amp; Development</h3><p>with Nico Katz, Maximilian Krcmar &amp; <br>Steffen Schad (SAP), Boris Zarske (SAP)</p></div></div>
+      </div>
+      <div class="grid dsag2">
+        <div class="card rv" data-photos="CB_Presentation_01.jpeg, CB_Presentation_02.jpeg, CB_Presentation_03.jpeg">
+          <h3>On stage at the DSAG Jahreskongress & Technologie Days</h3>
+          <p>Frequently represents Evonik with pragmatic insights into Automation and LaMa – separating productive reality from marketing buzz.</p>
+          <blockquote>SAP Landscape Management - Extensibility<small>Introduction to REST APIs</small></blockquote>
+        </div>
+        <div class="card rv">
+          <h3>BTP „Pain-Points-Liste“</h3>
+          <p>Actor in creating, maintaining and driving the DSAG Pain Points List for SAP BTP – turning real operational requirements into input for SAP product management.</p>
+          <div class="flow">
+            <span>Customers &amp; users</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            <span>Pain-Points-Liste</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            <span class="end">SAP product mgmt.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 · Media -->
+    <section class="panel" id="p6" role="tabpanel">
+      <p class="eyebrow rv">06 · Talks, Podcasts &amp; Articles</p>
+      <h2 class="rv">Listen, read, connect</h2>
+      <div class="grid media">
+        <div class="col rv">
+          <h3><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1v-6h3zM3 19a2 2 0 0 0 2 2h1v-6H3z"/></svg></span>Podcasts</h3>
+          <div class="links">
+            <a class="lk" href="https://www.podbean.com/podcast-detail/yidqx-699c0/Coffee-Corner-Radio-Podcast" target="_blank" rel="noopener"><small>Coffee Corner Radio · Ep. 79</small><b>Live from the DSAG Jahreskongress</b></a>
+            <a class="lk" href="https://www.youtube.com/watch?v=eutYF83Haew" target="_blank" rel="noopener"><small>SAP Sommeliers · #64</small><b>Karrieresprungbrett SAP-Community Events</b></a>
+            <a class="lk" href="https://poddtoppen.se/podcast/1370422791/coffee-corner-radio-the-unofficial-sap-community-podcast/episode-55-post-sap-teched-2021-with-christian-braukmuller-chris-paine-simon-martin" target="_blank" rel="noopener"><small>Coffee Corner Radio · Ep. 55</small><b>Post SAP TechEd 2021</b><span>with Chris Paine</span></a>
+            <div class="lk"><small>We love Output · Ep. 34</small><b>Scaling SAP Stammtisch Frankfurt to 100+ events</b><span>with Hendrik Neumann &amp; Frank Engert</span></div>
+          </div>
+        </div>
+        <div class="col rv">
+          <h3><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h12a2 2 0 0 1 2 2v14H6a2 2 0 0 1-2-2z"/><path d="M18 8h2v10a2 2 0 0 1-2 2M8 8h6M8 12h6M8 16h4"/></svg></span>Articles</h3>
+          <div class="links">
+            <a class="lk" href="https://impulsant.dsag.de/formate/textbeitrag/weiterentwicklung-von-sap-btp/" target="_blank" rel="noopener"><small>DSAG Impulsant</small><b>Weiterentwicklung von SAP BTP – die „Pain-Points-Liste“</b></a>
+            <a class="lk" href="https://impulsant.dsag.de/formate/textbeitrag/was-ist-eigentlich-die-sap-business-technology-platform/" target="_blank" rel="noopener"><small>DSAG Impulsant</small><b>Was ist eigentlich die SAP Business Technology Platform?</b></a>
+            <a class="lk" href="https://github.com/SAPStammtisch/Frankfurt" target="_blank" rel="noopener"><small>Github</small><b>SAP Stammtisch Frankfurt - Homepage</b></a>
+            <a class="lk" href="https://community.sap.com/t5/sap-teched-blog-posts/meet-our-sap-mentors-at-sap-teched-2017-las-vegas/ba-p/13311680" target="_blank" rel="noopener"><small>SAP Community</small><b>Meet our SAP Mentors at SAP TechEd</b></a>
+            <a class="lk" href="https://community.sap.com/t5/sap-teched-blog-posts/cluebus-2017-from-sitsv-to-sapteched-las-vegas-with-capra/ba-p/13342080" target="_blank" rel="noopener"><small>SAP Community</small><b>🚌 From SAP Inside Track San Francisco to SAP TechEd Las Vegas</b></a>
+          </div>
+        </div>
+        <div class="col rv">
+          <h3><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg></span>Profiles</h3>
+          <div class="links">
+            <a class="lk" href="https://www.linkedin.com/in/cbasis" target="_blank" rel="noopener"><small>LinkedIn</small><b>linkedin.com/in/cbasis</b></a>
+            <a class="lk" href="https://github.com/CBasis" target="_blank" rel="noopener"><small>GitHub</small><b>github.com/CBasis</b></a>
+            <div class="lk"><small>X / Twitter · SAP Community</small><b>@CBasis</b><span>Same handle everywhere</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7 · Passions -->
+    <section class="panel" id="p7" role="tabpanel">
+      <p class="eyebrow rv">07 · Passions &amp; Methods</p>
+      <h2 class="rv">What drives me</h2>
+      <div class="grid pas">
+        <div class="card rv">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></div>
+          <h3>Visualization &amp; Visual Thinking</h3>
+          <p>Custom graphics, architecture sketches and simplified visual workflows to communicate complex SAP landscape structures – and to make technical governance clear.</p>
+          <div class="pills"><span class="pill">Architecture sketches</span><span class="pill">Visual workflows</span><span class="pill">Clear governance</span></div>
+        </div>
+        <div class="card rv">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="7" width="16" height="12" rx="3"/><path d="M12 3v4M9 12v1M15 12v1M9 16h6M2 12v2M22 12v2"/></svg></div>
+          <h3>Agentic Engineering</h3>
+          <p>Getting value out of AI via VibeCoding, Dashboard, Reports, Storytelling. <br>Exploring autonomous AI agents, automated tool orchestration and pragmatic generative AI integrations in modern enterprise cloud and BTP environments.</p>
+          <div class="pills"><span class="pill">AI agents</span><span class="pill">Tool orchestration</span><span class="pill">GenAI on BTP</span></div>
+        </div>
+      </div>
+      <div class="bye rv">
+        <div class="face"><img src="CB.jpeg" alt=""></div>
+        <div><b>Looking forward to working together!</b><span>Open for: Questions, ideas, sketches.</span></div>
+        <div class="pills">
+          <a class="pill" href="https://www.linkedin.com/in/cbasis" target="_blank" rel="noopener">LinkedIn</a>
+          <a class="pill" href="https://github.com/CBasis" target="_blank" rel="noopener">GitHub</a>
+          <span class="pill">@CBasis</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span>Christian Braukmüller · Evonik Industries AG</span>
+    <div class="prog"><i id="bar"></i></div>
+    <button class="nav" id="prev" aria-label="Previous chapter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+    <span class="pg" id="pg">1 / 7</span>
+    <button class="nav" id="next" aria-label="Next chapter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+  </footer>
+</div>
+
+<script>
+const stage = document.getElementById('stage');
+const tabs = [...document.querySelectorAll('.tab')];
+const panels = [...document.querySelectorAll('.panel')];
+const ink = document.getElementById('ink');
+let cur = -1;
+
+// photo viewer: first click opens photo 1, each further click shows the next, after the last it closes
+const CAM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></svg>';
+const NEXT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
+const CLOSE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+
+document.querySelectorAll('[data-photos]').forEach(box => {
+  const srcs = box.dataset.photos.split(',').map(x => x.trim());
+  const ph = document.createElement('div');
+  ph.className = 'ph';
+  ph.innerHTML = '<img class="bg" alt=""><img class="fg" alt=""><div class="dots">' + (srcs.length > 1 ? srcs.map(() => '<i></i>').join('') : '') + '</div>';
+  const btn = document.createElement('button');
+  btn.className = 'ph-btn';
+  box.append(ph, btn);
+  let idx = -1;
+
+  const render = () => {
+    const open = idx >= 0, last = idx === srcs.length - 1;
+    btn.innerHTML = (open ? (last ? CLOSE : NEXT) : CAM) + '<span class="cnt">' + (open && srcs.length > 1 ? (idx + 1) + '/' + srcs.length : '') + '</span>';
+    btn.setAttribute('aria-label', !open ? 'Show photos' : last ? 'Close photos' : 'Next photo');
+    ph.querySelectorAll('.dots i').forEach((d, i) => d.classList.toggle('on', i === idx));
+  };
+
+  const load = async (src, swap) => {
+    const im = new Image();
+    const loaded = new Promise(r => { im.onload = im.onerror = r; });
+    im.src = src;
+    if (swap) ph.classList.add('swap');
+    await Promise.all([loaded, swap ? new Promise(r => setTimeout(r, 250)) : null]);
+    if (srcs[idx] !== src) return; // closed or moved on while this one was loading
+    ph.querySelector('.fg').src = ph.querySelector('.bg').src = src;
+    ph.classList.remove('swap');
+  };
+
+  box.closePhotos = () => { idx = -1; ph.classList.remove('open', 'swap'); render(); };
+
+  const step = e => {
+    e.stopPropagation();
+    if (idx === srcs.length - 1) return box.closePhotos();
+    idx++;
+    if (idx === 0) {
+      // reveal grows from the button
+      const b = btn.getBoundingClientRect(), r = box.getBoundingClientRect();
+      ph.style.setProperty('--cx', ((b.left + b.width / 2 - r.left) / r.width * 100) + '%');
+      ph.style.setProperty('--cy', ((b.top + b.height / 2 - r.top) / r.height * 100) + '%');
+      load(srcs[0], false);
+      ph.classList.add('open');
+    } else load(srcs[idx], true);
+    render();
+  };
+  btn.addEventListener('click', step);
+  ph.addEventListener('click', step);
+  render();
+});
+
+function closePhotos(panel) {
+  panel.querySelectorAll('[data-photos]').forEach(b => b.closePhotos());
+}
+
+// warm the cache for a chapter's photos so the first click shows them right away
+const preloaded = new Set();
+function preloadPhotos(panel) {
+  panel.querySelectorAll('[data-photos]').forEach(box => box.dataset.photos.split(',').forEach(x => {
+    const src = x.trim();
+    if (!preloaded.has(src)) { preloaded.add(src); new Image().src = src; }
+  }));
+}
+
+// stagger index for reveal animations, per panel
+panels.forEach(p => p.querySelectorAll('.rv').forEach((el, i) => el.style.setProperty('--i', i)));
+
+function fit() {
+  const s = Math.min(innerWidth / 1600, innerHeight / 900);
+  stage.style.setProperty('--s', s);
+}
+
+function moveInk(t) {
+  ink.style.left = t.offsetLeft + 'px';
+  ink.style.width = t.offsetWidth + 'px';
+}
+
+function show(n) {
+  n = Math.max(0, Math.min(panels.length - 1, n));
+  if (n === cur) return;
+  const dir = n > cur ? 'fwd' : 'back';
+  const old = panels[cur];
+  if (old) {
+    closePhotos(old);
+    old.classList.remove('active', 'fwd', 'back');
+    old.classList.add('leaving', dir);
+    setTimeout(() => old.classList.remove('leaving', 'fwd', 'back'), 450);
+  }
+  const p = panels[n];
+  p.classList.remove('leaving', 'fwd', 'back');
+  void p.offsetWidth; // restart animations
+  p.classList.add('active', dir);
+  preloadPhotos(p);
+  tabs.forEach((t, i) => {
+    t.setAttribute('aria-selected', i === n);
+    t.tabIndex = i === n ? 0 : -1;
+  });
+  moveInk(tabs[n]);
+  cur = n;
+  document.getElementById('bar').style.width = ((n + 1) / panels.length * 100) + '%';
+  document.getElementById('pg').textContent = (n + 1) + ' / ' + panels.length;
+  document.getElementById('prev').disabled = n === 0;
+  document.getElementById('next').disabled = n === panels.length - 1;
+  history.replaceState(null, '', '#' + (n + 1));
+}
+
+tabs.forEach((t, i) => t.addEventListener('click', () => show(i)));
+document.getElementById('prev').onclick = () => show(cur - 1);
+document.getElementById('next').onclick = () => show(cur + 1);
+
+addEventListener('keydown', e => {
+  if (e.target.closest && e.target.closest('.ph-btn') && [' ', 'Enter'].includes(e.key)) return;
+  if (e.key === 'Escape') return closePhotos(panels[cur]);
+  if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); show(cur + 1); }
+  else if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); show(cur - 1); }
+  else if (e.key === 'Home') show(0);
+  else if (e.key === 'End') show(panels.length - 1);
+  else if (/^[1-7]$/.test(e.key)) show(+e.key - 1);
+  if (document.activeElement && document.activeElement.classList.contains('tab')) tabs[cur].focus();
+});
+
+// swipe on touch devices
+let x0 = null;
+addEventListener('touchstart', e => { x0 = e.touches[0].clientX }, { passive: true });
+addEventListener('touchend', e => {
+  if (x0 === null) return;
+  const dx = e.changedTouches[0].clientX - x0;
+  if (Math.abs(dx) > 50) show(cur + (dx < 0 ? 1 : -1));
+  x0 = null;
+});
+
+addEventListener('resize', fit);
+fit();
+ink.classList.add('instant');
+show(Math.max(0, (parseInt(location.hash.slice(1), 10) || 1) - 1));
+// re-measure once the web font has changed the tab widths
+const settle = () => { ink.classList.add('instant'); moveInk(tabs[cur]); requestAnimationFrame(() => ink.classList.remove('instant')); };
+if (document.fonts) document.fonts.ready.then(settle);
+addEventListener('load', settle);
+</script>
+</body>
+</html>
